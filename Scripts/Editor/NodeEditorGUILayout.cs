@@ -57,6 +57,16 @@ namespace XNodeEditor
             // If property is not a port, display a regular property field
             if (port == null)
             {
+                if (property.displayName != null)
+                {
+                    EditorGUIUtility.labelWidth =
+                        EditorStyles.label.CalcSize(new GUIContent(property.displayName)).x + 64;
+                }
+                else
+                {
+                    EditorGUIUtility.labelWidth = 84;
+                }
+
                 EditorGUILayout.PropertyField(property, label, includeChildren, GUILayout.MinWidth(30));
             }
             else
