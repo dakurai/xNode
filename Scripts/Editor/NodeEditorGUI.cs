@@ -691,9 +691,8 @@ namespace XNodeEditor
                     GUIStyle styleBody = new GUIStyle(nodeEditor.GetBodyStyle());
                     GUIStyle highlightStyle = new GUIStyle(nodeEditor.GetBodyHighlightStyle());
                     highlightStyle.padding = styleBody.padding;
-                    styleBody.padding = new RectOffset();
-                    GUI.color = nodeEditor.GetTint();
-                    GUILayout.BeginVertical(styleBody);
+                    // GUI.color = nodeEditor.GetTint();
+                    GUILayout.BeginVertical();
                     GUI.color = NodeEditorPreferences.GetSettings().highlightColor;
                     GUILayout.BeginVertical(new GUIStyle(highlightStyle));
                 }
@@ -702,11 +701,10 @@ namespace XNodeEditor
                     GUILayout.BeginVertical();
                 }
 
-                GUI.color = guiColor;
                 EditorGUI.BeginChangeCheck();
 
                 //Draw node contents
-                GUI.color = nodeEditor.GetHeaderColor();
+                GUI.color = nodeEditor.GetHeaderColor() * nodeEditor.GetTint();
                 GUIStyle styleHeader = new GUIStyle(nodeEditor.GetHeaderStyle());
                 GUILayout.BeginVertical(styleHeader);
                 GUI.color = guiColor;
@@ -721,7 +719,7 @@ namespace XNodeEditor
 
                 GUILayout.EndVertical();
 
-                GUI.color = nodeEditor.GetBodyColor();
+                GUI.color = nodeEditor.GetBodyColor() * nodeEditor.GetTint();
                 GUIStyle bodyStyle = new GUIStyle(nodeEditor.GetBodyStyle());
                 bodyStyle.padding = nodeEditor.GetBodyPadding();
                 GUILayout.BeginVertical(bodyStyle);
