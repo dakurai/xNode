@@ -58,12 +58,12 @@ namespace XNodeEditor
             }
 
             Event e = Event.current;
-            // If input is empty, revert name to default instead
+            // If input is empty, revert name to initial
             if (input == null || input.Trim() == "")
             {
                 if (e.isKey && e.keyCode == KeyCode.Return)
                 {
-                    SaveAndClose();
+                    Close();
                 }
             }
             // Rename asset to input text
