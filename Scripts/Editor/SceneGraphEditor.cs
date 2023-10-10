@@ -105,13 +105,17 @@ namespace XNodeEditor
                     Vector2 size = _titleStyle.CalcSize(new GUIContent(_sceneGraph.graph.name));
 
                     EditorGUILayout.LabelField(_sceneGraph.graph.name, _titleStyle, GUILayout.Height(size.y));
-                    EditorGUILayout.LabelField("Double click to rename graph", _titleSmallStyle);
                 }
 
                 Event e = Event.current;
                 switch (e.type)
                 {
                     case EventType.MouseDown:
+                        if (!_renameEnable && !GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition))
+                        {
+                            break;
+                        }
+
                         _renameEnable = e.clickCount == 2;
                         _nameInput = _sceneGraph.graph.name;
 
@@ -124,6 +128,13 @@ namespace XNodeEditor
                         break;
                 }
 
+                if (!_renameEnable)
+                {
+                    EditorGUILayout.LabelField("Double click to rename graph", _titleSmallStyle);
+                }
+
+
+                EditorGUILayout.Space();
 
                 // If input is empty, revert name to default instead
                 if (_nameInput == null || _nameInput.Trim() == "")
@@ -145,8 +156,6 @@ namespace XNodeEditor
                 {
                     Close();
                 }
-
-                EditorGUILayout.Space();
 
                 if (GUILayout.Button("Open graph", GUILayout.Height(40)))
                 {
