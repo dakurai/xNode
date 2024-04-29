@@ -289,7 +289,12 @@ namespace XNode {
         }
 
         /// <summary> Disconnect this port from another port </summary>
-        public void Disconnect(NodePort port) {
+        public void Disconnect(NodePort port, bool supportUndo = false) {
+            if (supportUndo)
+            {
+                UnityEditor.Undo.RecordObject(node, "Disconnect Port");
+            }
+
             // Remove this ports connection to the other
             for (int i = connections.Count - 1; i >= 0; i--) {
                 if (connections[i].Port == port) {
@@ -300,6 +305,11 @@ namespace XNode {
                 // Remove the other ports connection to this port
                 for (int i = 0; i < port.connections.Count; i++) {
                     if (port.connections[i].Port == this) {
+                        if (supportUndo)
+                        {
+                            UnityEditor.Undo.RecordObject(port.node, "Disconnect Port");
+                        }
+
                         port.connections.RemoveAt(i);
                         // Trigger OnRemoveConnection from this side port
                         port.node.OnRemoveConnection(port);
@@ -311,10 +321,20 @@ namespace XNode {
         }
 
         /// <summary> Disconnect this port from another port </summary>
-        public void Disconnect(int i) {
+        public void Disconnect(int i, bool supportUndo) {
+            if (supportUndo)
+            {
+                UnityEditor.Undo.RecordObject(node, "Disconnect Port");
+            }
+
             // Remove the other ports connection to this port
             NodePort otherPort = connections[i].Port;
             if (otherPort != null) {
+                if (supportUndo)
+                {
+                    UnityEditor.Undo.RecordObject(otherPort.node, "Disconnect Port");
+                }
+
                 otherPort.connections.RemoveAll(it => { return it.Port == this; });
             }
             // Remove this ports connection to the other
@@ -325,9 +345,9 @@ namespace XNode {
             if (otherPort != null) otherPort.node.OnRemoveConnection(otherPort);
         }
 
-        public void ClearConnections() {
+        public void ClearConnections(bool supportUndo = false) {
             while (connections.Count > 0) {
-                Disconnect(connections[0].Port);
+                Disconnect(connections[0].Port, supportUndo);
             }
         }
 

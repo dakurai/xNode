@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Codice.Client.BaseCommands.Download;
 using UnityEditor;
 using UnityEngine;
 using XNodeEditor.Internal;
@@ -68,6 +69,12 @@ namespace XNodeEditor {
 
             rect.position = Vector2.zero;
 
+            if (zoom >= 4f)
+            {
+                zoom /= 4f;
+                panOffset /= 4f;
+            }
+
             Vector2 center = rect.size / 2f;
             Texture2D gridTex = graphEditor.GetGridTexture();
             Texture2D crossTex = graphEditor.GetSecondaryGridTexture();
@@ -81,6 +88,7 @@ namespace XNodeEditor {
             // Amount of tiles
             float tileAmountX = Mathf.Round(rect.size.x * zoom) / gridTex.width;
             float tileAmountY = Mathf.Round(rect.size.y * zoom) / gridTex.height;
+            // Debug.Log("Zoom: " + zoom + " tileAmountX: " + tileAmountX + " tileAmountY: " + tileAmountY);
 
             Vector2 tileAmount = new Vector2(tileAmountX, tileAmountY);
 
@@ -118,9 +126,9 @@ namespace XNodeEditor {
             foreach (var port in hoveredPort.GetConnections()) {
                 var name = port.node.name;
                 var index = hoveredPort.GetConnectionIndex(port);
-                contextMenu.AddItem(new GUIContent(string.Format("Disconnect({0})", name)), false, () => hoveredPort.Disconnect(index));
+                contextMenu.AddItem(new GUIContent(string.Format("Disconnect({0})", name)), false, () => hoveredPort.Disconnect(index, true));
             }
-            contextMenu.AddItem(new GUIContent("Clear Connections"), false, () => hoveredPort.ClearConnections());
+            contextMenu.AddItem(new GUIContent("Clear Connections"), false, () => hoveredPort.ClearConnections(true));
             //Get compatible nodes with this port
             if (NodeEditorPreferences.GetSettings().createFilter) {
                 contextMenu.AddSeparator("");
@@ -474,22 +482,42 @@ namespace XNodeEditor {
                     GUIStyle highlightStyle = new GUIStyle(nodeEditor.GetBodyHighlightStyle());
                     highlightStyle.padding = style.padding;
                     style.padding = new RectOffset();
-                    GUI.color = nodeEditor.GetTint();
                     GUILayout.BeginVertical(style);
                     GUI.color = NodeEditorPreferences.GetSettings().highlightColor;
                     GUILayout.BeginVertical(new GUIStyle(highlightStyle));
                 } else {
-                    GUIStyle style = new GUIStyle(nodeEditor.GetBodyStyle());
-                    GUI.color = nodeEditor.GetTint();
-                    GUILayout.BeginVertical(style);
+                    // GUIStyle style = new GUIStyle(nodeEditor.GetBodyStyle());
+                    // GUI.color = nodeEditor.GetTint();
+                    // GUILayout.BeginVertical(style);
+                    GUILayout.BeginVertical();
                 }
 
                 GUI.color = guiColor;
                 EditorGUI.BeginChangeCheck();
 
                 //Draw node contents
+                // nodeEditor.OnHeaderGUI();
+                // nodeEditor.OnBodyGUI();
+                GUI.color = nodeEditor.GetHeaderColor();
+                GUIStyle headerStyle = new GUIStyle(nodeEditor.GetHeaderStyle());
+                GUILayout.BeginVertical(headerStyle);
+
+                GUI.color = guiColor;
                 nodeEditor.OnHeaderGUI();
+
+                GUILayout.EndVertical();
+
+                GUI.color = nodeEditor.GetBodyColor();
+                GUIStyle bodyStyle = new GUIStyle(nodeEditor.GetBodyStyle());
+                GUILayout.BeginVertical(bodyStyle);
+
+                GUI.color = guiColor;
+                GUIStyle bodyPaddingStyle = NodeEditorResources.styles.nodePadding;
+                GUILayout.BeginVertical(bodyPaddingStyle);
                 nodeEditor.OnBodyGUI();
+                GUILayout.EndVertical();
+
+                GUILayout.EndVertical();
 
                 //If user changed a value, notify other scripts through onUpdateNode
                 if (EditorGUI.EndChangeCheck()) {

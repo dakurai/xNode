@@ -32,8 +32,9 @@ namespace XNodeEditor {
             [UnityEngine.Serialization.FormerlySerializedAs("zoomOutLimit")]
             public float maxZoom = 5f;
             public float minZoom = 1f;
-            public Color32 tintColor = new Color32(90, 97, 105, 255);
             public Color32 highlightColor = new Color32(255, 255, 255, 255);
+            public Color32 bgHeaderColor = new Color32(50, 51, 54, 255);
+            public Color32 bgBodyColor = new Color32(65, 67, 70, 255);
             public bool gridSnap = true;
             public bool autoSave = true;
             public bool openOnCreate = true;
@@ -118,6 +119,11 @@ namespace XNodeEditor {
             VerifyLoaded();
             Settings settings = NodeEditorPreferences.settings[lastKey];
 
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.Space(5);
+
+            EditorGUILayout.BeginVertical();
+
             if (GUILayout.Button(new GUIContent("Documentation", "https://github.com/Siccity/xNode/wiki"), GUILayout.Width(100))) Application.OpenURL("https://github.com/Siccity/xNode/wiki");
             EditorGUILayout.Space();
 
@@ -128,11 +134,16 @@ namespace XNodeEditor {
             if (GUILayout.Button(new GUIContent("Set Default", "Reset all values to default"), GUILayout.Width(120))) {
                 ResetPrefs();
             }
+
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndHorizontal();
         }
 
         private static void GridSettingsGUI(string key, Settings settings) {
             //Label
-            EditorGUILayout.LabelField("Grid", EditorStyles.boldLabel);
+            // EditorGUILayout.LabelField("Grid", EditorStyles.boldLabel);
+            Separator("Grid Appearance");
+
             settings.gridSnap = EditorGUILayout.Toggle(new GUIContent("Snap", "Hold CTRL in editor to invert"), settings.gridSnap);
             settings.zoomToMouse = EditorGUILayout.Toggle(new GUIContent("Zoom to Mouse", "Zooms towards mouse position"), settings.zoomToMouse);
             EditorGUILayout.LabelField("Zoom");
@@ -140,8 +151,8 @@ namespace XNodeEditor {
             settings.maxZoom = EditorGUILayout.FloatField(new GUIContent("Max", "Upper limit to zoom"), settings.maxZoom);
             settings.minZoom = EditorGUILayout.FloatField(new GUIContent("Min", "Lower limit to zoom"), settings.minZoom);
             EditorGUI.indentLevel--;
-            settings.gridLineColor = EditorGUILayout.ColorField("Color", settings.gridLineColor);
-            settings.gridBgColor = EditorGUILayout.ColorField(" ", settings.gridBgColor);
+            settings.gridLineColor = EditorGUILayout.ColorField("Line Color", settings.gridLineColor);
+            settings.gridBgColor = EditorGUILayout.ColorField("Background Color", settings.gridBgColor);
             if (GUI.changed) {
                 SavePrefs(key, settings);
 
@@ -152,7 +163,8 @@ namespace XNodeEditor {
 
         private static void SystemSettingsGUI(string key, Settings settings) {
             //Label
-            EditorGUILayout.LabelField("System", EditorStyles.boldLabel);
+            // EditorGUILayout.LabelField("System", EditorStyles.boldLabel);
+            Separator("System");
             settings.autoSave = EditorGUILayout.Toggle(new GUIContent("Autosave", "Disable for better editor performance"), settings.autoSave);
             settings.openOnCreate = EditorGUILayout.Toggle(new GUIContent("Open Editor on Create", "Disable to prevent openening the editor when creating a new graph"), settings.openOnCreate);
             if (GUI.changed) SavePrefs(key, settings);
@@ -161,13 +173,17 @@ namespace XNodeEditor {
 
         private static void NodeSettingsGUI(string key, Settings settings) {
             //Label
-            EditorGUILayout.LabelField("Node", EditorStyles.boldLabel);
-            settings.tintColor = EditorGUILayout.ColorField("Tint", settings.tintColor);
+            // EditorGUILayout.LabelField("Node", EditorStyles.boldLabel);
+            Separator("Node Appearance");
+            settings.bgHeaderColor = EditorGUILayout.ColorField("Header Background", settings.bgHeaderColor);
+            settings.bgBodyColor = EditorGUILayout.ColorField("Body Background", settings.bgBodyColor);
             settings.highlightColor = EditorGUILayout.ColorField("Selection", settings.highlightColor);
+            EditorGUILayout.Space();
             settings.noodlePath = (NoodlePath) EditorGUILayout.EnumPopup("Noodle path", (Enum) settings.noodlePath);
             settings.noodleThickness = EditorGUILayout.FloatField(new GUIContent("Noodle thickness", "Noodle Thickness of the node connections"), settings.noodleThickness);
             settings.noodleStroke = (NoodleStroke) EditorGUILayout.EnumPopup("Noodle stroke", (Enum) settings.noodleStroke);
             settings.portTooltips = EditorGUILayout.Toggle("Port Tooltips", settings.portTooltips);
+            EditorGUILayout.Space();
             settings.dragToCreate = EditorGUILayout.Toggle(new GUIContent("Drag to Create", "Drag a port connection anywhere on the grid to create and connect a node"), settings.dragToCreate);
             settings.createFilter = EditorGUILayout.Toggle(new GUIContent("Create Filter", "Only show nodes that are compatible with the selected port"), settings.createFilter);
 
@@ -181,7 +197,8 @@ namespace XNodeEditor {
 
         private static void TypeColorsGUI(string key, Settings settings) {
             //Label
-            EditorGUILayout.LabelField("Types", EditorStyles.boldLabel);
+            // EditorGUILayout.LabelField("Types", EditorStyles.boldLabel);
+            Separator("Types");
 
             //Clone keys so we can enumerate the dictionary and make changes.
             var typeColorKeys = new List<Type>(typeColors.Keys);
@@ -202,6 +219,35 @@ namespace XNodeEditor {
                     NodeEditorWindow.RepaintAll();
                 }
             }
+        }
+
+        private static void Separator(string label = "")
+        {
+            Rect labelRect = EditorGUILayout.BeginHorizontal(GUILayout.Height(25));
+            labelRect.y += 10;
+
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
+            labelStyle.fontStyle = FontStyle.Bold;
+            Vector2 textSize = labelStyle.CalcSize(new GUIContent(label));
+            float separatorWidth = (labelRect.width - textSize.x) / 2 - 5;
+
+            // Needed here otherwise BeginHorizontal group has 0 height.
+            GUILayout.Label("");
+            Color initialColor = GUI.color;
+            Color lineColor = new Color(0.5f, 0.5f, 0.5f);
+            GUI.color = lineColor;
+            GUI.Box(new Rect(labelRect.xMin + 5, labelRect.yMin, separatorWidth - 5, 1), string.Empty);
+
+            GUI.color = initialColor;
+            GUI.Label(new Rect(labelRect.xMin + separatorWidth + 5, labelRect.yMin - 10, textSize.x, 20), label,
+                labelStyle);
+
+            GUI.color = lineColor;
+            GUI.Box(new Rect(labelRect.xMin + separatorWidth + 10 + textSize.x, labelRect.yMin, separatorWidth - 5, 1),
+                string.Empty);
+
+            GUI.color = initialColor;
+            EditorGUILayout.EndHorizontal();
         }
 
         /// <summary> Load prefs if they exist. Create if they don't </summary>

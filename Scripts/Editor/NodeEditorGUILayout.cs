@@ -320,7 +320,9 @@ namespace XNodeEditor {
         /// <param name="serializedObject">The serializedObject of the node</param>
         /// <param name="connectionType">Connection type of added dynamic ports</param>
         /// <param name="onCreation">Called on the list on creation. Use this if you want to customize the created ReorderableList</param>
-        public static void DynamicPortList(string fieldName, Type type, SerializedObject serializedObject, XNode.NodePort.IO io, XNode.Node.ConnectionType connectionType = XNode.Node.ConnectionType.Multiple, XNode.Node.TypeConstraint typeConstraint = XNode.Node.TypeConstraint.None, Action<ReorderableList> onCreation = null) {
+        public static void DynamicPortList(string fieldName, Type type, SerializedObject serializedObject, XNode.NodePort.IO io, XNode.Node.ConnectionType connectionType = XNode.Node.ConnectionType.Multiple,
+            XNode.Node.TypeConstraint typeConstraint = XNode.Node.TypeConstraint.None, Action<ReorderableList> onCreation = null, bool draggable = true, bool displayHeader = true,
+            bool displayAddButton = true, bool displayRemoveButton = true, bool preventRemoveAllItems = false) {
             XNode.Node node = serializedObject.targetObject as XNode.Node;
 
             var indexedPorts = node.DynamicPorts.Select(x => {
@@ -345,7 +347,8 @@ namespace XNodeEditor {
             // If a ReorderableList isn't cached for this array, do so.
             if (list == null) {
                 SerializedProperty arrayData = serializedObject.FindProperty(fieldName);
-                list = CreateReorderableList(fieldName, dynamicPorts, arrayData, type, serializedObject, io, connectionType, typeConstraint, onCreation);
+                list = CreateReorderableList(fieldName, dynamicPorts, arrayData, type, serializedObject, io, connectionType, typeConstraint, onCreation, draggable, displayHeader,
+                    displayAddButton, displayRemoveButton, preventRemoveAllItems);
                 if (reorderableListCache.TryGetValue(serializedObject.targetObject, out rlc)) rlc.Add(fieldName, list);
                 else reorderableListCache.Add(serializedObject.targetObject, new Dictionary<string, ReorderableList>() { { fieldName, list } });
             }
@@ -354,22 +357,28 @@ namespace XNodeEditor {
 
         }
 
-        private static ReorderableList CreateReorderableList(string fieldName, List<XNode.NodePort> dynamicPorts, SerializedProperty arrayData, Type type, SerializedObject serializedObject, XNode.NodePort.IO io, XNode.Node.ConnectionType connectionType, XNode.Node.TypeConstraint typeConstraint, Action<ReorderableList> onCreation) {
+        private static ReorderableList CreateReorderableList(string fieldName, List<XNode.NodePort> dynamicPorts, SerializedProperty arrayData, Type type, SerializedObject serializedObject, 
+            XNode.NodePort.IO io, XNode.Node.ConnectionType connectionType, XNode.Node.TypeConstraint typeConstraint, Action<ReorderableList> onCreation, bool draggable, bool displayHeader,
+            bool displayAddButton, bool displayRemoveButton, bool preventRemoveAllItems)
+        {
             bool hasArrayData = arrayData != null && arrayData.isArray;
             XNode.Node node = serializedObject.targetObject as XNode.Node;
-            ReorderableList list = new ReorderableList(dynamicPorts, null, true, true, true, true);
-            string label = arrayData != null ? arrayData.displayName : ObjectNames.NicifyVariableName(fieldName);
+            ReorderableList list = new ReorderableList(dynamicPorts, null, draggable, displayHeader, displayAddButton, displayRemoveButton);
+            string label = arrayData != null ? arrayData.displayName : ObjectNames.NicifyVariableName(fieldName); 
 
             list.drawElementCallback =
                 (Rect rect, int index, bool isActive, bool isFocused) => {
                     XNode.NodePort port = node.GetPort(fieldName + " " + index);
+                    // var port = index < dynamicPorts.Count ? dynamicPorts[index] : null; // improve performance
                     if (hasArrayData && arrayData.propertyType != SerializedPropertyType.String) {
                         if (arrayData.arraySize <= index) {
                             EditorGUI.LabelField(rect, "Array[" + index + "] data out of range");
                             return;
                         }
                         SerializedProperty itemData = arrayData.GetArrayElementAtIndex(index);
-                        EditorGUI.PropertyField(rect, itemData, true);
+                        // EditorGUI.indentLevel -= 1;
+                        EditorGUI.PropertyField(rect, itemData, GUIContent.none, true);
+                        // EditorGUI.indentLevel += 1;
                     } else EditorGUI.LabelField(rect, port != null ? port.fieldName : "");
                     if (port != null) {
                         Vector2 pos = rect.position + (port.IsOutput ? new Vector2(rect.width + 6, 0) : new Vector2(-36, 0));
@@ -445,6 +454,7 @@ namespace XNodeEditor {
             list.onAddCallback =
                 (ReorderableList rl) => {
                     // Add dynamic port postfixed with an index number
+                    Undo.RecordObject(node, "Duplicate " + type.ToString());
                     string newName = fieldName + " 0";
                     int i = 0;
                     while (node.HasPort(newName)) newName = fieldName + " " + (++i);
@@ -460,6 +470,10 @@ namespace XNodeEditor {
                 };
             list.onRemoveCallback =
                 (ReorderableList rl) => {
+                    // if (dynamicPorts.Count <= 1 || rl.index >= dynamicPorts.Count)
+                    // {
+                    //     return;
+                    // }
 
                     var indexedPorts = node.DynamicPorts.Select(x => {
                         string[] split = x.fieldName.Split(' ');
@@ -475,9 +489,9 @@ namespace XNodeEditor {
 
                     int index = rl.index;
 
-                    if (dynamicPorts[index] == null) {
+                    if (dynamicPorts.Count <= index) {
                         Debug.LogWarning("No port found at index " + index + " - Skipped");
-                    } else if (dynamicPorts.Count <= index) {
+                    } else if (dynamicPorts[index] == null) {
                         Debug.LogWarning("DynamicPorts[" + index + "] out of range. Length was " + dynamicPorts.Count + " - Skipped");
                     } else {
 

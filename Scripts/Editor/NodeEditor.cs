@@ -26,7 +26,8 @@ namespace XNodeEditor {
 #endif
 
         public virtual void OnHeaderGUI() {
-            GUILayout.Label(target.name, NodeEditorResources.styles.nodeHeader, GUILayout.Height(30));
+            // GUILayout.Label(target.name, NodeEditorResources.styles.nodeHeader, GUILayout.Height(30));
+            GUILayout.Label(target.name, NodeEditorResources.styles.nodeHeaderLabel, GUILayout.Height(30));
         }
 
         /// <summary> Draws standard field editors for all public fields </summary>
@@ -109,18 +110,49 @@ namespace XNodeEditor {
             else return 208;
         }
 
-        /// <summary> Returns color for target node </summary>
-        public virtual Color GetTint() {
-            // Try get color from [NodeTint] attribute
+        /// <summary> Returns header color for target node </summary>
+        public virtual Color GetHeaderColor()
+        {
+            // Try get color from [NodeColorHeader] attribute
             Type type = target.GetType();
             Color color;
-            if (type.TryGetAttributeTint(out color)) return color;
+            if (type.TryGetAttributeHeader(out color))
+            {
+                return color;
+            }
             // Return default color (grey)
-            else return NodeEditorPreferences.GetSettings().tintColor;
+
+            return NodeEditorPreferences.GetSettings().bgHeaderColor;
         }
 
-        public virtual GUIStyle GetBodyStyle() {
+        /// <summary> Returns body color for target node </summary>
+        public virtual Color GetBodyColor()
+        {
+            // Try get color from [NodeColorBody] attribute
+            Type type = target.GetType();
+            Color color;
+            if (type.TryGetAttributeBody(out color))
+            {
+                return color;
+            }
+            // Return default color (grey)
+
+            return NodeEditorPreferences.GetSettings().bgBodyColor;
+        }
+
+        public virtual GUIStyle GetHeaderStyle()
+        {
+            return NodeEditorResources.styles.nodeHeader;
+        }
+
+        public virtual GUIStyle GetBodyStyle()
+        {
             return NodeEditorResources.styles.nodeBody;
+        }
+
+        public virtual GUIStyle GetHeaderLabelStyle()
+        {
+            return NodeEditorResources.styles.nodeHeaderLabel;
         }
 
         public virtual GUIStyle GetBodyHighlightStyle() {

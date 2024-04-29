@@ -13,6 +13,8 @@ namespace XNodeEditor {
     /// <summary> Contains reflection-related extensions built for xNode </summary>
     public static class NodeEditorReflection {
         [NonSerialized] private static Dictionary<Type, Color> nodeTint;
+        [NonSerialized] private static Dictionary<Type, Color> nodeHeaderColor;
+        [NonSerialized] private static Dictionary<Type, Color> nodeBodyColor;
         [NonSerialized] private static Dictionary<Type, int> nodeWidth;
         /// <summary> All available node types </summary>
         public static Type[] nodeTypes { get { return _nodeTypes != null ? _nodeTypes : _nodeTypes = GetNodeTypes(); } }
@@ -37,6 +39,29 @@ namespace XNodeEditor {
                 CacheAttributes<Color, XNode.Node.NodeTintAttribute>(ref nodeTint, x => x.color);
             }
             return nodeTint.TryGetValue(nodeType, out tint);
+        }
+
+         /// <summary> Custom node header colors defined with [NodeColorHeader(r, g, b)] </summary>
+        public static bool TryGetAttributeHeader(this Type nodeType, out Color headerColor)
+        {
+            if (nodeHeaderColor == null)
+            {
+                CacheAttributes<Color, XNode.Node.NodeColorHeaderAttribute>(ref nodeHeaderColor, x => x.color);
+            }
+
+            return nodeHeaderColor.TryGetValue(nodeType, out headerColor);
+        }
+
+
+        /// <summary> Custom node body colors defined with [NodeColorBody(r, g, b)] </summary>
+        public static bool TryGetAttributeBody(this Type nodeType, out Color bodyColor)
+        {
+            if (nodeBodyColor == null)
+            {
+                CacheAttributes<Color, XNode.Node.NodeColorBodyAttribute>(ref nodeBodyColor, x => x.color);
+            }
+
+            return nodeBodyColor.TryGetValue(nodeType, out bodyColor);
         }
 
         /// <summary> Get custom node widths defined with [NodeWidth(width)] </summary>
