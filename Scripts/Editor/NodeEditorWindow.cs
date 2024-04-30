@@ -60,7 +60,7 @@ namespace XNodeEditor {
             if (length == _rects.Length) {
                 for (int i = 0; i < length; i++) {
                     XNode.NodePort nodePort = _references[i].GetNodePort();
-                    if (nodePort != null)
+                    if (nodePort != null && _portConnectionPoints.ContainsKey(nodePort) == false)
                         _portConnectionPoints.Add(nodePort, _rects[i]);
                 }
             }

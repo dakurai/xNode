@@ -489,9 +489,9 @@ namespace XNodeEditor {
 
                     int index = rl.index;
 
-                    if (dynamicPorts.Count <= index) {
+                    if (dynamicPorts[index] == null) {
                         Debug.LogWarning("No port found at index " + index + " - Skipped");
-                    } else if (dynamicPorts[index] == null) {
+                    } else if (dynamicPorts.Count <= index) {
                         Debug.LogWarning("DynamicPorts[" + index + "] out of range. Length was " + dynamicPorts.Count + " - Skipped");
                     } else {
 

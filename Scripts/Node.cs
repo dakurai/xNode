@@ -130,6 +130,12 @@ namespace XNode {
             NodeDataCache.UpdatePorts(this, ports);
         }
 
+        // <summary> Use to reorder ports </summary>
+        public void OverridePort(string fieldName, NodePort nodePort)
+        {
+            ports[fieldName] = nodePort;
+        }
+
         /// <summary> Initialize node. Called on enable. </summary>
         protected virtual void Init() { }
 
@@ -178,11 +184,17 @@ namespace XNode {
         }
 
         /// <summary> Remove an dynamic port from the node </summary>
-        public void RemoveDynamicPort(NodePort port) {
+        public void RemoveDynamicPort(NodePort port, bool supportUndo = false) {
             if (port == null) throw new ArgumentNullException("port");
             else if (port.IsStatic) throw new ArgumentException("cannot remove static port");
-            port.ClearConnections();
+            port.ClearConnections(supportUndo);
             ports.Remove(port.fieldName);
+        }
+
+        // <summary> Remove last port after move all up </summary>
+        public void ClearSelectedPortInDictionary(string fieldName)
+        {
+            ports.Remove(fieldName);
         }
 
         /// <summary> Removes all dynamic ports from the node </summary>

@@ -108,6 +108,12 @@ namespace XNode {
             _typeConstraint = typeConstraint;
         }
 
+        /// <summary> Change the name of the port. Use when change port order </summary>
+        public void ChangeFieldName(string newName)
+        {
+            _fieldName = newName;
+        }
+
         /// <summary> Checks all connections for invalid references, and removes them. </summary>
         public void VerifyConnections() {
             for (int i = connections.Count - 1; i >= 0; i--) {
@@ -353,6 +359,10 @@ namespace XNode {
 
         /// <summary> Get reroute points for a given connection. This is used for organization </summary>
         public List<Vector2> GetReroutePoints(int index) {
+            if (index < 0 || index >= connections.Count)
+            {
+                Debug.LogWarning("Index out of range. Index: " + index + ", Connections: " + connections.Count);
+            }
             return connections[index].reroutePoints;
         }
 

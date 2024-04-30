@@ -29,9 +29,10 @@ namespace XNodeEditor {
             Controls();
 
             DrawGrid(position, zoom, panOffset);
+            DrawNodes(); // draw nodes before connections to fix missing info after Undo
             DrawConnections();
             DrawDraggedConnection();
-            DrawNodes();
+            // DrawNodes();
             DrawSelectionBox();
             DrawTooltip();
             graphEditor.OnGUI();
@@ -351,7 +352,10 @@ namespace XNodeEditor {
                 foreach (XNode.NodePort output in node.Outputs) {
                     //Needs cleanup. Null checks are ugly
                     Rect fromRect;
-                    if (!_portConnectionPoints.TryGetValue(output, out fromRect)) continue;
+                    if (!_portConnectionPoints.TryGetValue(output, out fromRect))
+                    {
+                        continue;
+                    }
 
                     Color portColor = graphEditor.GetPortColor(output);
                     GUIStyle portStyle = graphEditor.GetPortStyle(output);
@@ -365,10 +369,16 @@ namespace XNodeEditor {
                         NoodleStroke noodleStroke = graphEditor.GetNoodleStroke(output, input);
 
                         // Error handling
-                        if (input == null) continue; //If a script has been updated and the port doesn't exist, it is removed and null is returned. If this happens, return.
+                        if (input == null)
+                        {
+                            continue; //If a script has been updated and the port doesn't exist, it is removed and null is returned. If this happens, return.
+                        }
                         if (!input.IsConnectedTo(output)) input.Connect(output);
                         Rect toRect;
-                        if (!_portConnectionPoints.TryGetValue(input, out toRect)) continue;
+                        if (!_portConnectionPoints.TryGetValue(input, out toRect))
+                        {
+                            continue;
+                        }
 
                         List<Vector2> reroutePoints = output.GetReroutePoints(k);
 
@@ -396,7 +406,6 @@ namespace XNodeEditor {
                             GUI.DrawTexture(rect, portStyle.active.background);
                             if (rect.Overlaps(selectionBox)) selection.Add(rerouteRef);
                             if (rect.Contains(mousePos)) hoveredReroute = rerouteRef;
-
                         }
                     }
                 }
@@ -435,6 +444,12 @@ namespace XNodeEditor {
             if (boxSize.y < 0) { boxStartPos.y += boxSize.y; boxSize.y = Mathf.Abs(boxSize.y); }
             Rect selectionBox = new Rect(boxStartPos, boxSize);
 
+            // clear _portConnectionPoints cache before repainting nodes and ports
+            if (e.type == EventType.Repaint)
+            {
+                _portConnectionPoints.Clear();
+            }
+
             //Save guiColor so we can revert it
             Color guiColor = GUI.color;
 
@@ -456,13 +471,6 @@ namespace XNodeEditor {
                     }
                 } else if (culledNodes.Contains(node)) continue;
 
-                if (e.type == EventType.Repaint) {
-                    removeEntries.Clear();
-                    foreach (var kvp in _portConnectionPoints)
-                        if (kvp.Key.node == node) removeEntries.Add(kvp.Key);
-                    foreach (var k in removeEntries) _portConnectionPoints.Remove(k);
-                }
-
                 NodeEditor nodeEditor = NodeEditor.GetEditor(node, this);
 
                 NodeEditor.portPositions.Clear();
@@ -482,6 +490,7 @@ namespace XNodeEditor {
                     GUIStyle highlightStyle = new GUIStyle(nodeEditor.GetBodyHighlightStyle());
                     highlightStyle.padding = style.padding;
                     style.padding = new RectOffset();
+                    GUI.color = new Color(0, 0, 0, 0); // prevent weird effect on header background
                     GUILayout.BeginVertical(style);
                     GUI.color = NodeEditorPreferences.GetSettings().highlightColor;
                     GUILayout.BeginVertical(new GUIStyle(highlightStyle));
