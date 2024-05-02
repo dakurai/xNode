@@ -171,7 +171,7 @@ namespace XNodeEditor {
                                     XNode.NodePort output = hoveredPort.Connection;
                                     int outputConnectionIndex = output.GetConnectionIndex(hoveredPort);
                                     draggedOutputReroutes = output.GetReroutePoints(outputConnectionIndex);
-                                    hoveredPort.Disconnect(output);
+                                    hoveredPort.Disconnect(output, true);
                                     draggedOutput = output;
                                     draggedOutputTarget = hoveredPort;
                                     if (NodeEditor.onUpdateNode != null) NodeEditor.onUpdateNode(node);

@@ -202,6 +202,7 @@ namespace XNodeEditor {
             NodeEditorWindow w = GetWindow(typeof(NodeEditorWindow), false, "xNode", true) as NodeEditorWindow;
             w.wantsMouseMove = true;
             w.graph = graph;
+            w.Home();
             return w;
         }
 

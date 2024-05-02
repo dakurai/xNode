@@ -130,15 +130,16 @@ namespace XNodeEditor {
                 contextMenu.AddItem(new GUIContent(string.Format("Disconnect({0})", name)), false, () => hoveredPort.Disconnect(index, true));
             }
             contextMenu.AddItem(new GUIContent("Clear Connections"), false, () => hoveredPort.ClearConnections(true));
-            //Get compatible nodes with this port
-            if (NodeEditorPreferences.GetSettings().createFilter) {
-                contextMenu.AddSeparator("");
+            // Disable creating nodes when right click on ports
+            // //Get compatible nodes with this port
+            // if (NodeEditorPreferences.GetSettings().createFilter) {
+            //     contextMenu.AddSeparator("");
 
-                if (hoveredPort.direction == XNode.NodePort.IO.Input)
-                    graphEditor.AddContextMenuItems(contextMenu, hoveredPort.ValueType, XNode.NodePort.IO.Output);
-                else
-                    graphEditor.AddContextMenuItems(contextMenu, hoveredPort.ValueType, XNode.NodePort.IO.Input);
-            }
+            //     if (hoveredPort.direction == XNode.NodePort.IO.Input)
+            //         graphEditor.AddContextMenuItems(contextMenu, hoveredPort.ValueType, XNode.NodePort.IO.Output);
+            //     else
+            //         graphEditor.AddContextMenuItems(contextMenu, hoveredPort.ValueType, XNode.NodePort.IO.Input);
+            // }
             contextMenu.DropDown(new Rect(Event.current.mousePosition, Vector2.zero));
             if (NodeEditorPreferences.GetSettings().autoSave) AssetDatabase.SaveAssets();
         }

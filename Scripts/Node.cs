@@ -130,7 +130,7 @@ namespace XNode {
             NodeDataCache.UpdatePorts(this, ports);
         }
 
-        // <summary> Use to reorder ports </summary>
+        // <summary> Use to override a slot in the port list (used when reorder ports) </summary>
         public void OverridePort(string fieldName, NodePort nodePort)
         {
             ports[fieldName] = nodePort;
