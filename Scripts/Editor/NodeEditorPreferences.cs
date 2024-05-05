@@ -41,7 +41,7 @@ namespace XNodeEditor {
             public bool dragToCreate = true;
             public bool createFilter = true;
             public bool zoomToMouse = true;
-            public bool portTooltips = true;
+            public bool portTooltips = false; // disable toolTip by default
             [SerializeField] private string typeColorsData = "";
             [NonSerialized] public Dictionary<string, Color> typeColors = new Dictionary<string, Color>();
             [FormerlySerializedAs("noodleType")] public NoodlePath noodlePath = NoodlePath.Curvy;
@@ -89,7 +89,7 @@ namespace XNodeEditor {
         public static Settings GetSettings() {
             if (XNodeEditor.NodeEditorWindow.current == null) return new Settings();
 
-            if (lastEditor != XNodeEditor.NodeEditorWindow.current.graphEditor) {
+            if (lastEditor != XNodeEditor.NodeEditorWindow.current.graphEditor && XNodeEditor.NodeEditorWindow.current.graphEditor != null) {
                 object[] attribs = XNodeEditor.NodeEditorWindow.current.graphEditor.GetType().GetCustomAttributes(typeof(XNodeEditor.NodeGraphEditor.CustomNodeGraphEditorAttribute), true);
                 if (attribs.Length == 1) {
                     XNodeEditor.NodeGraphEditor.CustomNodeGraphEditorAttribute attrib = attribs[0] as XNodeEditor.NodeGraphEditor.CustomNodeGraphEditorAttribute;
@@ -280,28 +280,21 @@ namespace XNodeEditor {
         }
 
         /// <summary> Return color based on type </summary>
-        public static Color GetTypeColor(System.Type type) {
+        public static Color GetTypeColor(System.Type type)
+        {
             VerifyLoaded();
             if (type == null) return Color.gray;
             Color col;
             if (!typeColors.TryGetValue(type, out col)) {
                 string typeName = type.PrettyName();
-                if (settings[lastKey].typeColors.ContainsKey(typeName)) typeColors.Add(type, settings[lastKey].typeColors[typeName]);
-                else {
-#if UNITY_5_4_OR_NEWER
-                    UnityEngine.Random.State oldState = UnityEngine.Random.state;
-                    UnityEngine.Random.InitState(typeName.GetHashCode());
-#else
-                    int oldSeed = UnityEngine.Random.seed;
-                    UnityEngine.Random.seed = typeName.GetHashCode();
-#endif
-                    col = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
-                    typeColors.Add(type, col);
-#if UNITY_5_4_OR_NEWER
-                    UnityEngine.Random.state = oldState;
-#else
-                    UnityEngine.Random.seed = oldSeed;
-#endif
+                if (settings[lastKey].typeColors.ContainsKey(typeName))
+                {
+                    typeColors.Add(type, settings[lastKey].typeColors[typeName]);
+                }
+                else
+                {
+                    // default color of port is organge
+                    col = new Color32(175, 117, 54, 255);
                 }
             }
             return col;

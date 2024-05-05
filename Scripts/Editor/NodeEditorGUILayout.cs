@@ -322,7 +322,7 @@ namespace XNodeEditor {
         /// <param name="onCreation">Called on the list on creation. Use this if you want to customize the created ReorderableList</param>
         public static void DynamicPortList(string fieldName, Type type, SerializedObject serializedObject, XNode.NodePort.IO io, XNode.Node.ConnectionType connectionType = XNode.Node.ConnectionType.Multiple,
             XNode.Node.TypeConstraint typeConstraint = XNode.Node.TypeConstraint.None, Action<ReorderableList> onCreation = null, bool draggable = true, bool displayHeader = true,
-            bool displayAddButton = true, bool displayRemoveButton = true, bool preventRemoveAllItems = false) {
+            bool displayAddButton = true, bool displayRemoveButton = true) {
             XNode.Node node = serializedObject.targetObject as XNode.Node;
 
             var indexedPorts = node.DynamicPorts.Select(x => {
@@ -348,7 +348,7 @@ namespace XNodeEditor {
             if (list == null) {
                 SerializedProperty arrayData = serializedObject.FindProperty(fieldName);
                 list = CreateReorderableList(fieldName, dynamicPorts, arrayData, type, serializedObject, io, connectionType, typeConstraint, onCreation, draggable, displayHeader,
-                    displayAddButton, displayRemoveButton, preventRemoveAllItems);
+                    displayAddButton, displayRemoveButton);
                 if (reorderableListCache.TryGetValue(serializedObject.targetObject, out rlc)) rlc.Add(fieldName, list);
                 else reorderableListCache.Add(serializedObject.targetObject, new Dictionary<string, ReorderableList>() { { fieldName, list } });
             }
@@ -359,7 +359,7 @@ namespace XNodeEditor {
 
         private static ReorderableList CreateReorderableList(string fieldName, List<XNode.NodePort> dynamicPorts, SerializedProperty arrayData, Type type, SerializedObject serializedObject, 
             XNode.NodePort.IO io, XNode.Node.ConnectionType connectionType, XNode.Node.TypeConstraint typeConstraint, Action<ReorderableList> onCreation, bool draggable, bool displayHeader,
-            bool displayAddButton, bool displayRemoveButton, bool preventRemoveAllItems)
+            bool displayAddButton, bool displayRemoveButton)
         {
             bool hasArrayData = arrayData != null && arrayData.isArray;
             XNode.Node node = serializedObject.targetObject as XNode.Node;
